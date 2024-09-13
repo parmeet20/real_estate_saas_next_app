@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { propertyStore } from "@/store/propertyStore";
 import React, { useEffect, useState } from "react";
@@ -23,17 +24,16 @@ import {
 } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const truncateText = (text, wordLimit) => {
+// Helper function to truncate text
+const truncateText = (text: string, wordLimit: number) => {
   const words = text.split(" ");
-  if (words.length > wordLimit) {
-    return words.slice(0, wordLimit).join(" ") + "...";
-  }
-  return text;
+  return words.length > wordLimit
+    ? words.slice(0, wordLimit).join(" ") + "..."
+    : text;
 };
 
 const Page = () => {
+  // State for filters
   const [bathroom, setBathroom] = useState<boolean>(false);
   const [bedroom, setBedroom] = useState<boolean>(false);
   const [price, setPrice] = useState<boolean>(false);
@@ -41,20 +41,32 @@ const Page = () => {
   const [busDistance, setBusDistance] = useState<boolean>(false);
   const [schoolDistance, setSchoolDistance] = useState<boolean>(false);
   const [area, setArea] = useState<boolean>(false);
-  const { fetchProperties, properties = [] } = propertyStore();
+
+  const { fetchFilteredProperties, properties = [] } = propertyStore();
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchProperties();
+      await fetchFilteredProperties({
+        bathroom,
+        bedroom,
+        price,
+        latest,
+        busDistance,
+        schoolDistance,
+        area,
+      });
     };
     fetchData();
-  }, [fetchProperties, properties, bedroom,
-        latest,
-        bathroom,
-        area,
-        price,
-        busDistance,
-        schoolDistance,]);
+  }, [
+    fetchFilteredProperties,
+    bathroom,
+    bedroom,
+    price,
+    latest,
+    busDistance,
+    schoolDistance,
+    area,
+  ]);
 
   const mapItems = properties.map((property) => ({
     id: property.id,
@@ -77,36 +89,58 @@ const Page = () => {
           <AccordionContent className="grid grid-cols-4">
             <div className="flex items-center p-3">
               Latest
-              <Switch className="ml-2" onClick={() => setLatest(!latest)} />
+              <Switch
+                className="ml-2"
+                checked={latest}
+                onClick={() => setLatest((prev) => !prev)}
+              />
             </div>
             <div className="flex items-center p-3">
               Price
-              <Switch className="ml-2" onClick={() => setPrice(!price)} />
+              <Switch
+                className="ml-2"
+                checked={price}
+                onClick={() => setPrice((prev) => !prev)}
+              />
             </div>
             <div className="flex items-center p-3">
               Area
-              <Switch className="ml-2" onClick={() => setArea(!area)} />
+              <Switch
+                className="ml-2"
+                checked={area}
+                onClick={() => setArea((prev) => !prev)}
+              />
             </div>
             <div className="flex items-center p-3">
               Bedrooms
-              <Switch className="ml-2" onClick={() => setBedroom(!bedroom)} />
+              <Switch
+                className="ml-2"
+                checked={bedroom}
+                onClick={() => setBedroom((prev) => !prev)}
+              />
             </div>
             <div className="flex items-center p-3">
               Bathrooms
-              <Switch className="ml-2" onClick={() => setBathroom(!bathroom)} />
+              <Switch
+                className="ml-2"
+                checked={bathroom}
+                onClick={() => setBathroom((prev) => !prev)}
+              />
             </div>
             <div className="flex items-center p-3">
               Bus distance
               <Switch
                 className="ml-2"
-                onClick={() => setBusDistance(!busDistance)}
+                checked={busDistance}
+                onClick={() => setBusDistance((prev) => !prev)}
               />
             </div>
             <div className="flex items-center p-3">
               School distance
               <Switch
                 className="ml-2"
-                onClick={() => setSchoolDistance(!schoolDistance)}
+                checked={schoolDistance}
+                onClick={() => setSchoolDistance((prev) => !prev)}
               />
             </div>
           </AccordionContent>
@@ -131,7 +165,6 @@ const Page = () => {
                       height={100}
                       className="w-full overflow-hidden rounded-t-lg h-[200px] object-cover"
                     />
-
                     <div className="p-4">
                       <CardTitle className="text-2xl font-bold">
                         {property.title}
@@ -145,7 +178,7 @@ const Page = () => {
                       <CardDescription className="flex dark:text-slate-200 items-center text-xs space-x-2 mt-2">
                         <LocateIcon />
                         <span className="font-semibold">
-                          ${property.address}
+                          {property.address}
                         </span>
                       </CardDescription>
                     </div>
@@ -160,7 +193,7 @@ const Page = () => {
                   </CardFooter>
                   <CardContent className="p-4">
                     <CardDescription className="text-gray-600 dark:text-slate-300 mb-4">
-                      {truncateText(property.description, 20)}
+                      {truncateText(property.description ?? "", 20)}
                     </CardDescription>
                     <Button className="w-full">
                       <Link href={`/properties/${property.id}`}>Explore</Link>

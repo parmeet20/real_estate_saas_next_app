@@ -1,7 +1,7 @@
 import { API_URL } from "@/conf/ApiUrl";
 import axios from "axios";
 import { create } from "zustand";
-import { User, userAuthStore } from "@/store/authStore"; // Import the userAuthStore
+import { User, userAuthStore } from "@/store/authStore";
 // PropertyType enum
 export enum PropertyType {
     HOUSE = "HOUSE",
@@ -39,9 +39,21 @@ interface PropertyState {
     properties: Property[] | [];
     property: Property | null;
     fetchProperties: () => Promise<void>;
+    fetchFilteredProperties:(query:FilterParams)=>Promise<void>;
     getPropertyById: (id: string) => Promise<void>;
     getUserProperties: (userId: string) => Promise<void>;
 }
+
+export interface FilterParams {
+    bedroom?: boolean;
+    latest?: boolean;
+    bathroom?: boolean;
+    area?: boolean;
+    price?: boolean;
+    busDistance?: boolean;
+    schoolDistance?: boolean;
+}
+
 const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
 export const propertyStore = create<PropertyState>((set) => ({
     properties: [],
@@ -59,7 +71,30 @@ export const propertyStore = create<PropertyState>((set) => ({
             set({ properties: [], property: null });
         }
     },
-
+    fetchFilteredProperties: async (query: FilterParams) => {
+        const { token } = userAuthStore.getState();
+        try {
+            // Construct the query string
+            const queryParams = new URLSearchParams();
+            if (query.area) queryParams.append('query', 'area');
+            if (query.price) queryParams.append('query', 'price');
+            if (query.bathroom) queryParams.append('query', 'bathroom');
+            if (query.bedroom) queryParams.append('query', 'bedroom');
+            if (query.busDistance) queryParams.append('query', 'busDistance');
+            if (query.schoolDistance) queryParams.append('query', 'schoolDistance');
+            if (query.latest) queryParams.append('query', 'createdAt');
+    
+            const res = await axios.get(`${API_URL}/api/properties/all?${queryParams.toString()}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            set({ properties: res.data });
+        } catch (error) {
+            set({ properties: [], property: null });
+        }
+    },
+    
     getPropertyById: async (id: string) => {
         const { token } = userAuthStore.getState();
         try {
