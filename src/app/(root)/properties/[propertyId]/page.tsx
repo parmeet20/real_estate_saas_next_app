@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { propertyStore } from "@/store/propertyStore";
 import { PhoneCall, Users } from "lucide-react";
-import {CldImage } from "next-cloudinary"
+import { CldImage } from "next-cloudinary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import {
@@ -25,11 +25,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { API_URL } from "@/conf/ApiUrl";
+import { userAuthStore } from "@/store/authStore";
+import { toast } from "@/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Page = () => {
   const params = useParams();
   const { property, getPropertyById } = propertyStore();
-
+  const { user, token } = userAuthStore();
   useEffect(() => {
     const propertyId = Array.isArray(params.propertyId)
       ? params.propertyId[0]
@@ -54,6 +64,27 @@ const Page = () => {
     const isLastSlide = currentIndex === images.length - 1;
     const newIndex = isLastSlide ? 0 : currentIndex + 1;
     setCurrentIndex(newIndex);
+  };
+
+  const bookmarkProperty = async () => {
+    try {
+      await axios.put(
+        `${API_URL}/api/properties/bookmark/${property?.id}/${user?.id}`,
+        {}, // Empty request body if not needed
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast({
+        title: "SUCCESS",
+        description: "This property is bookmarked successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      // Optionally, handle the error here, such as showing an error toast
+    }
   };
 
   return (
@@ -91,19 +122,28 @@ const Page = () => {
 
       {/* Location and Action Buttons */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center text-gray-700">
+        <div className="flex items-center dark:text-muted text-gray-700">
           <MapPin className="mr-2" />
           <p>
             {property?.address}, {property?.city}
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="bg-gray-200 p-2 rounded-full shadow-sm hover:bg-gray-300 transition">
-            <Bookmark />
-          </button>
-          <button className="bg-gray-200 p-2 rounded-full shadow-sm hover:bg-gray-300 transition">
+          <Button onClick={() => bookmarkProperty()} size="icon">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Bookmark />
+                </TooltipTrigger>
+                <TooltipContent className="mb-2">
+                  <p>Add to bookmarks</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </Button>
+          <Button size="icon">
             <MessageCircleMore />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -139,94 +179,131 @@ const Page = () => {
       </div>
       {/* Utilities and Features */}
       <div className="space-y-6">
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">General</h2>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <Hammer className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Utilities:</p>
-                <p>{property?.utilities}</p>
+        <div className="space-y-6">
+          <Card className="bg-violet-0 p-6 rounded-lg shadow-md">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-800 mb-4">
+                General
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <Hammer className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Utilities:
+                    </p>
+                    <p>{property?.utilities}</p>
+                  </div>
+                </Card>
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <Dog className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Pet Policy:
+                    </p>
+                    <p>
+                      {property?.petAllowed
+                        ? "Pets allowed"
+                        : "Pets not allowed"}
+                    </p>
+                  </div>
+                </Card>
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <Cigarette className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Smoking:
+                    </p>
+                    <p>
+                      {property?.smokingAllowed
+                        ? "Smoking allowed"
+                        : "Smoking not allowed"}
+                    </p>
+                  </div>
+                </Card>
               </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <Dog className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Pet Policy:</p>
-                <p>
-                  {property?.petAllowed ? "Pets allowed" : "Pets not allowed"}
-                </p>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <Cigarette className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Smoking:</p>
-                <p>
-                  {property?.smokingAllowed
-                    ? "Smoking allowed"
-                    : "Smoking not allowed"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        {/* Size and Nearby Places */}
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Size</h2>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <Grid2X2 className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Size:</p>
-                <p>{property?.area} sqm</p>
+          <Card className="bg-violet-0 p-6 rounded-lg shadow-md">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-800 mb-4">
+                Size
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <Grid2X2 className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Size:
+                    </p>
+                    <p>{property?.area} sqm</p>
+                  </div>
+                </Card>
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <Bed className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Bedrooms:
+                    </p>
+                    <p>{property?.bedroom}</p>
+                  </div>
+                </Card>
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <Bath className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Bathrooms:
+                    </p>
+                    <p>{property?.bathroom}</p>
+                  </div>
+                </Card>
               </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <Bed className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Bedrooms:</p>
-                <p>{property?.bedroom}</p>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <Bath className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Bathrooms:</p>
-                <p>{property?.bathroom}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Nearby Places
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <School className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">School:</p>
-                <p>{property?.schoolDistance} m away</p>
+          <Card className="bg-violet-0 p-6 rounded-lg shadow-md">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-800 mb-4">
+                Nearby Places
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <School className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      School:
+                    </p>
+                    <p>{property?.schoolDistance} m away</p>
+                  </div>
+                </Card>
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <BusFront className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Bus Stop:
+                    </p>
+                    <p>{property?.busDistance} m away</p>
+                  </div>
+                </Card>
+                <Card className="hover:bg-muted p-4 rounded-lg shadow-sm flex items-center gap-2">
+                  <Hotel className="text-gray-600" />
+                  <div>
+                    <p className="font-semibold dark:text-muted text-gray-700">
+                      Restaurants:
+                    </p>
+                    <p>300 m away</p>
+                  </div>
+                </Card>
               </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <BusFront className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Bus Stop:</p>
-                <p>{property?.busDistance} m away</p>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-2">
-              <Hotel className="text-gray-600" />
-              <div>
-                <p className="font-semibold text-gray-700">Restaurants:</p>
-                <p>300 m away</p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

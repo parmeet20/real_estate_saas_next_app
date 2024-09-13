@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { propertyStore } from "@/store/propertyStore";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,6 +15,13 @@ import Link from "next/link";
 import { CldImage } from "next-cloudinary";
 import { DollarSign, LocateIcon } from "lucide-react";
 import Map from "@/components/shared/Map";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -27,6 +34,13 @@ const truncateText = (text, wordLimit) => {
 };
 
 const Page = () => {
+  const [bathroom, setBathroom] = useState<boolean>(false);
+  const [bedroom, setBedroom] = useState<boolean>(false);
+  const [price, setPrice] = useState<boolean>(false);
+  const [latest, setLatest] = useState<boolean>(false);
+  const [busDistance, setBusDistance] = useState<boolean>(false);
+  const [schoolDistance, setSchoolDistance] = useState<boolean>(false);
+  const [area, setArea] = useState<boolean>(false);
   const { fetchProperties, properties = [] } = propertyStore();
 
   useEffect(() => {
@@ -34,22 +48,70 @@ const Page = () => {
       await fetchProperties();
     };
     fetchData();
-  }, [fetchProperties, properties]);
+  }, [fetchProperties, properties, bedroom,
+        latest,
+        bathroom,
+        area,
+        price,
+        busDistance,
+        schoolDistance,]);
 
   const mapItems = properties.map((property) => ({
     id: property.id,
     latitude: parseFloat(property.latitude),
     longitude: parseFloat(property.longitude),
-    image: property.images[0], // Assuming you want to use the first image
+    image: property.images[0],
     title: property.title,
-    bedrooms: property.bedroom.toString(), // Ensure this is a string if needed
+    bedrooms: property.bedroom.toString(),
     price: property.price,
   }));
 
   return (
     <div className="p-5 space-y-3">
       <Map items={mapItems} />
-      <Button>Filter</Button>
+      <Accordion type="single" collapsible className="w-full px-8">
+        <AccordionItem value="item-1">
+          <AccordionTrigger>
+            <Button>Filter</Button>
+          </AccordionTrigger>
+          <AccordionContent className="grid grid-cols-4">
+            <div className="flex items-center p-3">
+              Latest
+              <Switch className="ml-2" onClick={() => setLatest(!latest)} />
+            </div>
+            <div className="flex items-center p-3">
+              Price
+              <Switch className="ml-2" onClick={() => setPrice(!price)} />
+            </div>
+            <div className="flex items-center p-3">
+              Area
+              <Switch className="ml-2" onClick={() => setArea(!area)} />
+            </div>
+            <div className="flex items-center p-3">
+              Bedrooms
+              <Switch className="ml-2" onClick={() => setBedroom(!bedroom)} />
+            </div>
+            <div className="flex items-center p-3">
+              Bathrooms
+              <Switch className="ml-2" onClick={() => setBathroom(!bathroom)} />
+            </div>
+            <div className="flex items-center p-3">
+              Bus distance
+              <Switch
+                className="ml-2"
+                onClick={() => setBusDistance(!busDistance)}
+              />
+            </div>
+            <div className="flex items-center p-3">
+              School distance
+              <Switch
+                className="ml-2"
+                onClick={() => setSchoolDistance(!schoolDistance)}
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
       <div className="flex">
         <div className="flex-1">
           {properties.length === 0 ? (
@@ -67,8 +129,9 @@ const Page = () => {
                       alt="NA"
                       width={100}
                       height={100}
-                      className="w-full rounded-t-lg h-[200px] object-cover"
+                      className="w-full overflow-hidden rounded-t-lg h-[200px] object-cover"
                     />
+
                     <div className="p-4">
                       <CardTitle className="text-2xl font-bold">
                         {property.title}

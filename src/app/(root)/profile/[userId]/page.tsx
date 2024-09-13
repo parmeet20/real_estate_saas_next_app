@@ -22,6 +22,13 @@ import { DollarSign } from "lucide-react";
 
 const Page = () => {
   const params = useParams();
+  const truncateText = (text: string, wordLimit: number) => {
+    const words = text.split(" ");
+    if (words.length > wordLimit) {
+      return words.slice(0, wordLimit).join(" ") + "...";
+    }
+    return text;
+  };
   const [getUser, setGetUser] = useState<User | null>(null);
   const { token, user } = userAuthStore();
   const { fetchProperties, properties = [] } = propertyStore();
@@ -72,9 +79,6 @@ const Page = () => {
           {user?.id === getUser.id ? (
             <div className="mt-4 space-y-5">
               <Button className="w-full">
-                <Link href={`/profile/${user.id}/update`}>Edit Profile</Link>
-              </Button>
-              <Button className="w-full">
                 <Link href="/properties/create">Create a new listing</Link>
               </Button>
             </div>
@@ -95,20 +99,20 @@ const Page = () => {
             className="grid grid-cols-2 space-x-8 w-1/2 mx-auto"
           >
             {properties.map((item) =>
-              item.owner.email === user.email ? (
+              item.owner.email === getUser.email ? (
                 <Card key={item.id} className="w-[310px] my-2 hover:bg-muted">
-                  <CardHeader>
+                  <CardHeader className="relative w-full h-[250px]">
                     <CldImage
                       src={item.images[0]}
-                      width={300}
-                      height={100}
-                      alt="CN"
-                      className="rounded-2xl w-[300] h-[250]"
+                      alt="Property Image"
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-2xl  p-3"
                     />
                   </CardHeader>
                   <CardContent>
                     <p>
-                      <strong></strong> {item.title}
+                      <strong>{item.title}</strong>
                     </p>
                     <p className="flex items-center">
                       <strong>
@@ -116,7 +120,7 @@ const Page = () => {
                       </strong>{" "}
                       {item.price}
                     </p>
-                    <p>{item.description ?? ""}</p>
+                    <p>{truncateText(item.description ?? "", 10)}</p>
                   </CardContent>
                   <CardFooter>
                     <Button className="w-full">
@@ -127,7 +131,54 @@ const Page = () => {
               ) : null
             )}
           </TabsContent>
-          <TabsContent value="Bookmarks">This is my bookmarks tab</TabsContent>
+          <TabsContent
+            value="Bookmarks"
+            className="grid grid-cols-2 space-x-8 w-1/2 mx-auto"
+          >
+            {properties
+              .filter((property) =>
+                property.usersBookmarks.some(
+                  (bookmarkedUser) => bookmarkedUser.id === getUser.id
+                )
+              )
+              .map((filteredProperty) => (
+                <Card
+                  key={filteredProperty.id}
+                  className="w-[310px] my-2 hover:bg-muted"
+                >
+                  <CardHeader className="relative w-full h-[250px]">
+                    <CldImage
+                      src={filteredProperty.images[0]}
+                      alt="Property Image"
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-2xl p-3"
+                    />
+                  </CardHeader>
+                  <CardContent>
+                    <p>
+                      <strong>{filteredProperty.title}</strong>
+                    </p>
+                    <p className="flex items-center">
+                      <strong>
+                        <DollarSign />
+                      </strong>{" "}
+                      {filteredProperty.price}
+                    </p>
+                    <p>
+                      {truncateText(filteredProperty.description ?? "", 10)}
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full">
+                      <Link href={`/properties/${filteredProperty.id}`}>
+                        Explore
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+          </TabsContent>
         </Tabs>
       </div>
     ) : (

@@ -32,6 +32,7 @@ export interface Property {
     schoolDistance: number;
     bedroom: number;
     bathroom: number;
+    usersBookmarks:User[],
 }
 
 interface PropertyState {
