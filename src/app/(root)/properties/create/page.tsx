@@ -21,8 +21,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SelectValue } from "@radix-ui/react-select";
 import axios from "axios";
-import { Building } from "lucide-react";
-import React from "react";
+import { Building, Loader2 } from "lucide-react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { API_URL } from "@/conf/ApiUrl";
@@ -73,6 +73,7 @@ const Page: React.FC = () => {
     typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
   const onSubmit = async (values: z.infer<typeof registerFormSchema>) => {
     try {
+      setLoading(true);
       const res = await axios.post<Property>(
         `${API_URL}/api/properties/create/${user?.id}`,
         values,
@@ -93,12 +94,13 @@ const Page: React.FC = () => {
         title: "UPGRADE YOUR PLAN",
         description: "Upgrade your plan to add more listings",
       });
+    } finally {
+      setLoading(false);
     }
-    console.log(values);
   };
-
-  return (
-    user?.id?(<div>
+  const [loading, setLoading] = useState<boolean>(false);
+  return user?.id ? (
+    <div>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -262,7 +264,6 @@ const Page: React.FC = () => {
                     onUpload={(result) => {
                       if (result.event !== "success") return;
                       const info = result.info as { secure_url: string };
-                      // Update the form field value with the new image URL
                       field.onChange([...field.value, info.secure_url]);
                     }}
                   >
@@ -410,10 +411,22 @@ const Page: React.FC = () => {
               )}
             />
           </div>
-          <Button type="submit">Create listing</Button>
+          <Button type="submit" disabled={loading}>
+            {!loading ? (
+              "Create listing"
+            ) : (
+              <>
+                {" "}
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </>
+            )}
+          </Button>
         </form>
       </Form>
-    </div>):<AuthenticatedPage/>
+    </div>
+  ) : (
+    <AuthenticatedPage />
   );
 };
 

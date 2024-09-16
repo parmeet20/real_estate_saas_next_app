@@ -11,7 +11,7 @@ import {
 
 const Page = () => {
   return (
-    <div className="pt-8 min-h-screen flex flex-col items-center">
+    <div className="pt-8 p-5 min-h-screen flex flex-col items-center">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200">
           Welcome to {"   "}

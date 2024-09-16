@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 const PricingPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 py-12">
+    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 py-12 px-5">
       <div className="text-center mb-12">
         <h1 className="text-5xl font-bold text-gray-800 dark:text-gray-200">Pricing Plans</h1>
         <p className="text-lg dark:text-gray-300 text-gray-500 mt-4">Choose the plan that suits you best</p>

@@ -79,64 +79,64 @@ const Page = () => {
   }));
 
   return (
-    <div className="p-5 space-y-3">
+    <div className="p-4 sm:p-5 space-y-4 sm:space-y-6">
       <Map items={mapItems} />
-      <Accordion type="single" collapsible className="w-full px-8">
+      <Accordion type="single" collapsible className="w-full px-4 sm:px-8">
         <AccordionItem value="item-1">
           <AccordionTrigger>
-            <Button>Filter</Button>
+            <Button className="w-[100px] text-center">Filter</Button>
           </AccordionTrigger>
-          <AccordionContent className="grid grid-cols-4">
-            <div className="flex items-center p-3">
-              Latest
+          <AccordionContent className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="flex items-center space-x-2">
+              <span>Latest</span>
               <Switch
                 className="ml-2"
                 checked={latest}
                 onClick={() => setLatest((prev) => !prev)}
               />
             </div>
-            <div className="flex items-center p-3">
-              Price
+            <div className="flex items-center space-x-2">
+              <span>Price</span>
               <Switch
                 className="ml-2"
                 checked={price}
                 onClick={() => setPrice((prev) => !prev)}
               />
             </div>
-            <div className="flex items-center p-3">
-              Area
+            <div className="flex items-center space-x-2">
+              <span>Area</span>
               <Switch
                 className="ml-2"
                 checked={area}
                 onClick={() => setArea((prev) => !prev)}
               />
             </div>
-            <div className="flex items-center p-3">
-              Bedrooms
+            <div className="flex items-center space-x-2">
+              <span>Bedrooms</span>
               <Switch
                 className="ml-2"
                 checked={bedroom}
                 onClick={() => setBedroom((prev) => !prev)}
               />
             </div>
-            <div className="flex items-center p-3">
-              Bathrooms
+            <div className="flex items-center space-x-2">
+              <span>Bathrooms</span>
               <Switch
                 className="ml-2"
                 checked={bathroom}
                 onClick={() => setBathroom((prev) => !prev)}
               />
             </div>
-            <div className="flex items-center p-3">
-              Bus distance
+            <div className="flex items-center space-x-2">
+              <span>Bus distance</span>
               <Switch
                 className="ml-2"
                 checked={busDistance}
                 onClick={() => setBusDistance((prev) => !prev)}
               />
             </div>
-            <div className="flex items-center p-3">
-              School distance
+            <div className="flex items-center space-x-2">
+              <span>School distance</span>
               <Switch
                 className="ml-2"
                 checked={schoolDistance}
@@ -146,64 +146,62 @@ const Page = () => {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-      <div className="flex">
-        <div className="flex-1">
-          {properties.length === 0 ? (
-            <div>No properties found</div>
-          ) : (
-            <div className="grid grid-cols-1 p-7 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {properties.map((property) => (
-                <Card
-                  key={property.id}
-                  className="shadow-lg hover:shadow-xl hover:bg-muted transition-shadow duration-300"
-                >
-                  <CardHeader className="p-0">
-                    <CldImage
-                      src={property.images[0]}
-                      alt="NA"
-                      width={100}
-                      height={100}
-                      className="w-full overflow-hidden rounded-t-lg h-[200px] object-cover"
-                    />
-                    <div className="p-4">
-                      <CardTitle className="text-2xl font-bold">
-                        {property.title}
-                      </CardTitle>
-                      <CardDescription className="flex dark:text-slate-200 items-center space-x-1 mt-2">
-                        <DollarSign />
-                        <span className="text-xl font-semibold">
-                          {property.price}
-                        </span>
-                      </CardDescription>
-                      <CardDescription className="flex dark:text-slate-200 items-center text-xs space-x-2 mt-2">
-                        <LocateIcon />
-                        <span className="font-semibold">
-                          {property.address}
-                        </span>
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardFooter className="p-4 flex justify-between items-center">
-                    <Badge>
-                      <Link href={`/profile/${property.owner.id}`}>
-                        @{property.owner.email}
-                      </Link>
-                    </Badge>
-                    <Badge>New</Badge>
-                  </CardFooter>
-                  <CardContent className="p-4">
-                    <CardDescription className="text-gray-600 dark:text-slate-300 mb-4">
-                      {truncateText(property.description ?? "", 20)}
+      <div className="flex flex-col">
+        {properties.length === 0 ? (
+          <div className="text-center">No properties found</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {properties.map((property) => (
+              <Card
+                key={property.id}
+                className="shadow-lg hover:shadow-xl hover:bg-muted transition-shadow duration-300"
+              >
+                <CardHeader className="p-0">
+                  <CldImage
+                    src={property.images[0]}
+                    alt="NA"
+                    width={100}
+                    height={100}
+                    className="w-full overflow-hidden rounded-t-lg h-[200px] sm:h-[150px] object-cover"
+                  />
+                  <div className="p-3 sm:p-4">
+                    <CardTitle className="text-xl sm:text-2xl font-bold">
+                      {property.title}
+                    </CardTitle>
+                    <CardDescription className="flex dark:text-slate-200 items-center space-x-1 mt-2">
+                      <DollarSign />
+                      <span className="text-lg sm:text-xl font-semibold">
+                        {property.price}
+                      </span>
                     </CardDescription>
-                    <Button className="w-full">
-                      <Link href={`/properties/${property.id}`}>Explore</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+                    <CardDescription className="flex dark:text-slate-200 items-center text-xs space-x-2 mt-2">
+                      <LocateIcon />
+                      <span className="font-semibold text-sm sm:text-base">
+                        {property.address}
+                      </span>
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardFooter className="p-3 sm:p-4 flex justify-between items-center">
+                  <Badge>
+                    <Link href={`/profile/${property.owner.id}`}>
+                      @{property.owner.email}
+                    </Link>
+                  </Badge>
+                  <Badge>New</Badge>
+                </CardFooter>
+                <CardContent className="p-3 sm:p-4">
+                  <CardDescription className="text-gray-600 dark:text-slate-300 mb-4 text-sm sm:text-base">
+                    {truncateText(property.description ?? "", 20)}
+                  </CardDescription>
+                  <Button className="w-full">
+                    <Link href={`/properties/${property.id}`}>Explore</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
