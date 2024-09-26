@@ -162,7 +162,7 @@ const Page = () => {
                     alt="NA"
                     width={100}
                     height={100}
-                    className="w-full overflow-hidden rounded-t-lg h-[200px] sm:h-[150px] object-cover"
+                    className="w-full overflow-hidden rounded-t-lg h-[200px] sm:h-[250px] object-cover"
                   />
                   <div className="p-3 sm:p-4">
                     <CardTitle className="text-xl sm:text-2xl font-bold">

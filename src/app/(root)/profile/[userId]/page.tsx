@@ -32,12 +32,14 @@ const Page = () => {
   const [getUser, setGetUser] = useState<User | null>(null);
   const { token, user } = userAuthStore();
   const { fetchProperties, properties = [] } = propertyStore();
+
   useEffect(() => {
     const fetchData = async () => {
       await fetchProperties();
     };
     fetchData();
-  }, [fetchProperties, properties]);
+  }, [fetchProperties]);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -57,8 +59,8 @@ const Page = () => {
   return getUser?.id ? (
     user?.id ? (
       <div className="items-center">
-        <div className="mx-auto p-6 max-w-full sm:max-w-md w-full">
-          <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="mx-auto p-6 max-w-md w-full">
+          <div className="flex items-center space-x-4">
             <Avatar>
               <AvatarImage
                 className="h-16 w-16 rounded-full"
@@ -67,8 +69,8 @@ const Page = () => {
               />
               <AvatarFallback>NA</AvatarFallback>
             </Avatar>
-            <div className="text-center sm:text-left">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {getUser.email}
               </h2>
               <p className="text-slate-600 dark:text-slate-400">
@@ -83,25 +85,28 @@ const Page = () => {
               </Button>
             </div>
           ) : (
-            <div className="mt-4 text-center">
+            <div className="mt-4">
               Welcome to {getUser.email}
               {"'s profile"}
             </div>
           )}
         </div>
         <Tabs defaultValue="My Listings">
-          <TabsList className="grid grid-cols-2 gap-2 w-full sm:w-[500px] mx-auto">
+          <TabsList className={`grid ${user.id === getUser.id?"grid-cols-3":"grid-cols-2"}  w-[500px] mx-auto`}>
             <TabsTrigger value="My Listings">Listings</TabsTrigger>
             <TabsTrigger value="Bookmarks">Bookmarks</TabsTrigger>
+            {user.id === getUser.id && (
+              <TabsTrigger value="Booked Properties">Booked</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent
             value="My Listings"
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-3/4 mx-auto"
+            className="grid grid-cols-2 space-x-8 w-1/2 mx-auto"
           >
             {properties.map((item) =>
               item.owner.email === getUser.email ? (
-                <Card key={item.id} className="w-full sm:w-[310px] my-2 hover:bg-muted">
-                  <CardHeader className="relative w-full h-[200px] sm:h-[250px]">
+                <Card key={item.id} className="w-[310px] my-2 hover:bg-muted">
+                  <CardHeader className="relative w-full h-[250px]">
                     <CldImage
                       src={item.images[0]}
                       alt="Property Image"
@@ -133,7 +138,7 @@ const Page = () => {
           </TabsContent>
           <TabsContent
             value="Bookmarks"
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-3/4 mx-auto"
+            className="grid grid-cols-2 space-x-8 w-1/2 mx-auto"
           >
             {properties
               .filter((property) =>
@@ -144,9 +149,9 @@ const Page = () => {
               .map((filteredProperty) => (
                 <Card
                   key={filteredProperty.id}
-                  className="w-full sm:w-[310px] my-2 hover:bg-muted"
+                  className="w-[310px] my-2 hover:bg-muted"
                 >
-                  <CardHeader className="relative w-full h-[200px] sm:h-[250px]">
+                  <CardHeader className="relative w-full h-[250px]">
                     <CldImage
                       src={filteredProperty.images[0]}
                       alt="Property Image"
@@ -179,6 +184,56 @@ const Page = () => {
                 </Card>
               ))}
           </TabsContent>
+          {user.id === getUser.id && (
+            <TabsContent
+              value="Booked Properties"
+              className="grid grid-cols-2 space-x-8 w-1/2 mx-auto"
+            >
+              {properties
+                .filter((property) =>
+                  property.bookedBy.some(
+                    (bookedUser) => bookedUser.id === getUser.id
+                  )
+                )
+                .map((bookedProperty) => (
+                  <Card
+                    key={bookedProperty.id}
+                    className="w-[310px] my-2 hover:bg-muted"
+                  >
+                    <CardHeader className="relative w-full h-[250px]">
+                      <CldImage
+                        src={bookedProperty.images[0]}
+                        alt="Property Image"
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-2xl p-3"
+                      />
+                    </CardHeader>
+                    <CardContent>
+                      <p>
+                        <strong>{bookedProperty.title}</strong>
+                      </p>
+                      <p className="flex items-center">
+                        <strong>
+                          <DollarSign />
+                        </strong>{" "}
+                        {bookedProperty.price}
+                      </p>
+                      <p>
+                        {truncateText(bookedProperty.description ?? "", 10)}
+                      </p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full">
+                        <Link href={`/properties/${bookedProperty.id}`}>
+                          Explore
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     ) : (

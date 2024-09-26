@@ -8,11 +8,15 @@ import { Home } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { userAuthStore } from "@/store/authStore";
 import Notifications from "./Notifications";
+import { ModeToggle } from "./ModeToggle";
+import { notificationStore } from "@/store/notificationStore";
 
 const Navbar = () => {
   const { fetchUser, user, logout } = userAuthStore();
+  const {getAllNotifications} = notificationStore();
   useEffect(() => {
     fetchUser();
+    getAllNotifications(user?.id||"");
   }, [fetchUser, user]);
 
   const path = usePathname();
@@ -77,13 +81,17 @@ const Navbar = () => {
             </>
           ) : (
             <>
+              <ModeToggle />
               <Notifications user={user} />
               <Button>
-                <Link href={`/profile/${user.id}`} className="flex items-center space-x-2">
+                <Link
+                  href={`/profile/${user.id}`}
+                  className="flex items-center space-x-2"
+                >
                   <img
                     src={user.profileImage}
                     alt="Profile"
-                    className="w-5 h-5 rounded-full"
+                    className="w-5 h-5 rounded-full mr-2"
                   />
                   {user.email}
                 </Link>
@@ -156,7 +164,10 @@ const Navbar = () => {
               <>
                 <Notifications user={user} />
                 <Button className="w-full">
-                  <Link href={`/profile/${user.id}`} className="flex items-center space-x-2">
+                  <Link
+                    href={`/profile/${user.id}`}
+                    className="flex items-center space-x-2"
+                  >
                     <img
                       src={user.profileImage}
                       alt="Profile"
@@ -165,7 +176,11 @@ const Navbar = () => {
                     {user.email}
                   </Link>
                 </Button>
-                <Button variant="destructive" className="w-full" onClick={() => logout()}>
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => logout()}
+                >
                   Logout
                 </Button>
               </>
