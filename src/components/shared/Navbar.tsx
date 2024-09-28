@@ -13,10 +13,10 @@ import { notificationStore } from "@/store/notificationStore";
 
 const Navbar = () => {
   const { fetchUser, user, logout } = userAuthStore();
-  const {getAllNotifications} = notificationStore();
+  const { getAllNotifications } = notificationStore();
   useEffect(() => {
     fetchUser();
-    getAllNotifications(user?.id||"");
+    getAllNotifications(user?.id || "");
   }, [fetchUser, user]);
 
   const path = usePathname();

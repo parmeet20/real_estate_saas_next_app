@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FC } from "react";
 import { Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css"; // Ensure Leaflet styles are imported
+import "leaflet/dist/leaflet.css";
 
 interface Data {
   id: string;
@@ -16,8 +16,6 @@ interface Data {
   bedrooms: string;
   price: number;
 }
-
-// Define a custom icon using Leaflet's L.icon method
 const customIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/128/149/149060.png',
   iconSize: [32, 32], // Size of the icon

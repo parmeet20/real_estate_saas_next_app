@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { propertyStore } from "@/store/propertyStore";
 import React, { useEffect, useState } from "react";
@@ -74,7 +73,7 @@ const Page = () => {
     longitude: parseFloat(property.longitude),
     image: property.images[0],
     title: property.title,
-    bedrooms: property.bedroom.toString(),
+    bedrooms: property.bedroom?.toString(),
     price: property.price,
   }));
 

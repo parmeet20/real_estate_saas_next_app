@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { CldImage, CldUploadWidget } from "next-cloudinary";
 import { Checkbox } from "@/components/ui/checkbox";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   Form,
   FormControl,
@@ -21,11 +22,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SelectValue } from "@radix-ui/react-select";
 import axios from "axios";
-import { Building, Loader2 } from "lucide-react";
+import { Brain, BrainCircuit, Building, Loader2 } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { API_URL } from "@/conf/ApiUrl";
+import { API_URL, GEMENI_API_KEY } from "@/conf/ApiUrl";
 import { userAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import { Property } from "@/store/propertyStore";
@@ -39,7 +40,7 @@ const registerFormSchema = z.object({
   title: z
     .string()
     .min(5, "should be at least 5 characters")
-    .max(35, "should not exceed 35 characters"),
+    .max(100, "should not exceed 100 characters"),
   description: z
     .string()
     .min(10, "should be at least 10 characters")
@@ -60,13 +61,34 @@ const registerFormSchema = z.object({
   bedroom: z.string(),
 });
 
-const Page: React.FC = () => {
+const Page = () => {
   const form = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       images: [],
     },
   });
+
+  const genAI = new GoogleGenerativeAI(GEMENI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const prompt = `Write a description on beautiful ${form.watch(
+    "propertyType"
+  )} in city for ${form.watch("city")} ${form.watch(
+    "title"
+  )} title in 200 words`;
+  const generateDescription = async () => {
+    try {
+      setLoading(true);
+      await model
+        .generateContent(prompt)
+        .then((res) => form.setValue("description", res.response.text()));
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const router = useRouter();
   const { user } = userAuthStore();
   const token =
@@ -153,10 +175,29 @@ const Page: React.FC = () => {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="enter your property description here"
-                    {...field}
-                  />
+                  <>
+                    <Textarea
+                      placeholder="enter your property description here"
+                      className={`${loading?"bg-muted animate-pulse":""}`}
+                      {...field}
+                    />
+                    <button
+                      onClick={() => generateDescription()}
+                      className={`relative ${
+                        loading ? "animate-pulse" : ""
+                      } inline-flex h-10 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50`}
+                    >
+                      <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+                      <span className="inline-flex h-full w-full cursor-pointer items-center space-x-3 justify-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full px-3 py-1 text-sm font-medium text-slate-300 backdrop-blur-3xl">
+                        {loading ? "Generating with AI" : "Generate with AI"}
+                        {loading ? (
+                          <BrainCircuit className="ml-2" />
+                        ) : (
+                          <Brain className="ml-2" />
+                        )}
+                      </span>
+                    </button>
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>
