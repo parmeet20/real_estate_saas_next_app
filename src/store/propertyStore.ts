@@ -1,7 +1,9 @@
 import { API_URL } from "@/conf/ApiUrl";
 import axios from "axios";
 import { create } from "zustand";
-import { User, userAuthStore } from "@/store/authStore";
+import { User } from "@/store/authStore";
+import Cookies from "js-cookie";
+
 // PropertyType enum
 export enum PropertyType {
     HOUSE = "HOUSE",
@@ -11,7 +13,7 @@ export enum PropertyType {
     APARTMENT = "APARTMENT"
 }
 
-// CreatePropertyDto interface
+// Property interface
 export interface Property {
     id: string;
     propertyType: PropertyType;
@@ -32,15 +34,15 @@ export interface Property {
     schoolDistance: number;
     bedroom: number;
     bathroom: number;
-    bookedBy:User[];
-    usersBookmarks:User[],
+    bookedBy: User[];
+    usersBookmarks: User[];
 }
 
 interface PropertyState {
     properties: Property[] | [];
     property: Property | null;
     fetchProperties: () => Promise<void>;
-    fetchFilteredProperties:(query:FilterParams)=>Promise<void>;
+    fetchFilteredProperties: (query: FilterParams) => Promise<void>;
     getPropertyById: (id: string) => Promise<void>;
     getUserProperties: (userId: string) => Promise<void>;
 }
@@ -55,12 +57,13 @@ export interface FilterParams {
     schoolDistance?: boolean;
 }
 
-const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+// Create the property store
 export const propertyStore = create<PropertyState>((set) => ({
     properties: [],
     property: null,
 
     fetchProperties: async () => {
+        const token = Cookies.get("jwt"); // Retrieve the token from cookies
         try {
             const res = await axios.get(`${API_URL}/api/properties/all`, {
                 headers: {
@@ -72,8 +75,9 @@ export const propertyStore = create<PropertyState>((set) => ({
             set({ properties: [], property: null });
         }
     },
+
     fetchFilteredProperties: async (query: FilterParams) => {
-        const { token } = userAuthStore.getState();
+        const token = Cookies.get("jwt"); // Retrieve the token from cookies
         try {
             // Construct the query string
             const queryParams = new URLSearchParams();
@@ -95,9 +99,9 @@ export const propertyStore = create<PropertyState>((set) => ({
             set({ properties: [], property: null });
         }
     },
-    
+
     getPropertyById: async (id: string) => {
-        const { token } = userAuthStore.getState();
+        const token = Cookies.get("jwt"); // Retrieve the token from cookies
         try {
             const res = await axios.get(`${API_URL}/api/properties/${id}`, {
                 headers: {
@@ -112,7 +116,7 @@ export const propertyStore = create<PropertyState>((set) => ({
     },
 
     getUserProperties: async (userId: string) => {
-        const { token } = userAuthStore.getState();
+        const token = Cookies.get("jwt"); // Retrieve the token from cookies
         try {
             const res = await axios.get(`${API_URL}/api/properties/user/${userId}`, {
                 headers: {
@@ -121,7 +125,7 @@ export const propertyStore = create<PropertyState>((set) => ({
             });
             set({ properties: res.data });
         } catch (error) {
-
+            console.log("Error fetching user properties:", error);
         }
     }
 }));
