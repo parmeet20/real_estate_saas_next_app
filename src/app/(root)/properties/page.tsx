@@ -63,12 +63,14 @@ const Page = () => {
 
   useEffect(() => {
     // Fetch country list from the API
-    const fetchCountries = async () => {
-      const res = await fetch("https://restcountries.com/v3.1/all");
-      const data = await res.json();
-      const countryList = data.map((country: Country) => ({
-        name: country.name.common,
-      }));
+  const countryList = data
+        .map((country: Country) => ({
+          name: country.name.common,
+        }))
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .sort((a, b) => a.name.localeCompare(b.name));
+
       setCountries(countryList);
     };
 
