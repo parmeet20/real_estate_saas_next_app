@@ -10,6 +10,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -46,6 +47,7 @@ const registerFormSchema = z.object({
     .min(10, "should be at least 10 characters")
     .max(1000, "should not exceed 1000 characters"),
   city: z.string().nonempty("City is required"),
+  country: z.string().nonempty("Country is required"),
   address: z.string().nonempty("Address is required"),
   latitude: z.string().nonempty("Latitude is required"),
   longitude: z.string().nonempty("Longitude is required"),
@@ -60,7 +62,16 @@ const registerFormSchema = z.object({
   bathroom: z.string(),
   bedroom: z.string(),
 });
-
+export interface Country {
+  name: {
+    common: string;
+    official: string;
+    nativeName: { [key: string]: { common: string } };
+  };
+  flags: {
+    png: string;
+  };
+}
 const Page = () => {
   const form = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
@@ -68,7 +79,19 @@ const Page = () => {
       images: [],
     },
   });
-
+  const [countries, setCountries] = useState<Country[]>([]);
+  React.useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await fetch("https://restcountries.com/v3.1/all");
+        const data = await response.json();
+        setCountries(data);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+      }
+    };
+    fetchCountries();
+  }, []);
   const genAI = new GoogleGenerativeAI(GEMENI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   const prompt = `Write a description on beautiful ${form.watch(
@@ -152,6 +175,9 @@ const Page = () => {
                     <SelectItem value="APARTMENT">APARTMENT</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormDescription>
+                  Choose your property type.
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -212,6 +238,36 @@ const Page = () => {
                 <FormControl>
                   <Input placeholder="city" {...field} />
                 </FormControl>
+                <FormMessage />
+                <FormDescription>
+                  Choose city of your listing.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="country"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Country</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a country" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {countries.map((country) => (
+                      <SelectItem key={country.name.common} value={country.name.common}>
+                        {country.name.common}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Choose your country from the list.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

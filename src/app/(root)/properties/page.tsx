@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { propertyStore } from "@/store/propertyStore";
 import React, { useEffect, useState } from "react";
@@ -22,6 +23,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Country } from "./create/page";
 
 // Helper function to truncate text
 const truncateText = (text: string, wordLimit: number) => {
@@ -40,24 +49,71 @@ const Page = () => {
   const [busDistance, setBusDistance] = useState<boolean>(false);
   const [schoolDistance, setSchoolDistance] = useState<boolean>(false);
   const [area, setArea] = useState<boolean>(false);
+  const [country, setCountry] = useState<string>("");
+  const [debouncedCountry, setDebouncedCountry] = useState<string>("");
+  const [countries, setCountries] = useState<{ name: string; code: string }[]>(
+    []
+  );
 
-  const { fetchFilteredProperties, properties = [] } = propertyStore();
+  const {
+    fetchFilteredProperties,
+    fetchSearchedProperties,
+    properties = [],
+  } = propertyStore();
+
+  useEffect(() => {
+    // Fetch country list from the API
+    const fetchCountries = async () => {
+      const res = await fetch("https://restcountries.com/v3.1/all");
+      const data = await res.json();
+      const countryList = data.map((country: Country) => ({
+        name: country.name.common,
+      }));
+      setCountries(countryList);
+    };
+
+    fetchCountries();
+  }, []);
+
+  useEffect(() => {
+    // Debounce effect to delay search query
+    const timeoutId = setTimeout(() => {
+      setDebouncedCountry(country);
+    }, 500); // 500ms debounce delay
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [country]);
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchFilteredProperties({
-        bathroom,
-        bedroom,
-        price,
-        latest,
-        busDistance,
-        schoolDistance,
-        area,
-      });
+      if (debouncedCountry) {
+        await fetchSearchedProperties({
+          country: debouncedCountry,
+          bathroom,
+          bedroom,
+          price,
+          latest,
+          busDistance,
+          schoolDistance,
+          area,
+        });
+      } else {
+        await fetchFilteredProperties({
+          bathroom,
+          bedroom,
+          price,
+          latest,
+          busDistance,
+          schoolDistance,
+          area,
+        });
+      }
     };
     fetchData();
   }, [
-    fetchFilteredProperties,
+    debouncedCountry,
     bathroom,
     bedroom,
     price,
@@ -65,6 +121,8 @@ const Page = () => {
     busDistance,
     schoolDistance,
     area,
+    fetchFilteredProperties,
+    fetchSearchedProperties,
   ]);
 
   const mapItems = properties.map((property) => ({
@@ -80,6 +138,26 @@ const Page = () => {
   return (
     <div className="p-4 sm:p-5 space-y-4 sm:space-y-6">
       <Map items={mapItems} />
+      <div className="w-[500px] px-4 sm:px-8 mt-4">
+        <Select value={country} onValueChange={setCountry}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select country" />
+          </SelectTrigger>
+          <SelectContent
+            style={{
+              zIndex: 1000,
+              position: "relative",
+            }}
+          >
+            {countries.map((country) => (
+              <SelectItem key={country.code} value={country.name}>
+                {country.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <Accordion type="single" collapsible className="w-full px-4 sm:px-8">
         <AccordionItem value="item-1">
           <AccordionTrigger>
