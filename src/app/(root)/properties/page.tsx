@@ -63,6 +63,9 @@ const Page = () => {
 
   useEffect(() => {
     // Fetch country list from the API
+    const fetchCountries = async () => {
+      const res = await fetch("https://restcountries.com/v3.1/all");
+      const data = await res.json();
   const countryList = data
         .map((country: Country) => ({
           name: country.name.common,
@@ -140,25 +143,6 @@ const Page = () => {
   return (
     <div className="p-4 sm:p-5 space-y-4 sm:space-y-6">
       <Map items={mapItems} />
-      <div className="w-[500px] px-4 sm:px-8 mt-4">
-        <Select value={country} onValueChange={setCountry}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select country" />
-          </SelectTrigger>
-          <SelectContent
-            style={{
-              zIndex: 1000,
-              position: "relative",
-            }}
-          >
-            {countries.map((country) => (
-              <SelectItem key={country.code} value={country.name}>
-                {country.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       <Accordion type="single" collapsible className="w-full px-4 sm:px-8">
         <AccordionItem value="item-1">
@@ -166,6 +150,25 @@ const Page = () => {
             <Button className="w-[100px] text-center">Filter</Button>
           </AccordionTrigger>
           <AccordionContent className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="w-[140px]">
+              <Select value={country} onValueChange={setCountry}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent
+                  style={{
+                    zIndex: 1000,
+                    position: "relative",
+                  }}
+                >
+                  {countries.map((country) => (
+                    <SelectItem key={country.code} value={country.name}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center space-x-2">
               <span>Latest</span>
               <Switch
